@@ -1,5 +1,6 @@
 import asyncio
 import importlib
+import subprocess
 import sys
 from types import SimpleNamespace
 
@@ -139,3 +140,21 @@ def test_importing_streamlit_module_has_no_runtime_side_effect(monkeypatch):
     imported = importlib.import_module("app")
 
     assert callable(imported.render)
+
+
+def test_all_production_modules_import_without_starting_services():
+    for module_name in ["sources", "models", "ingest", "rag_agent", "app", "telegram_bot"]:
+        assert importlib.import_module(module_name)
+
+
+def test_ingest_help_needs_no_credentials_and_lists_options():
+    result = subprocess.run(
+        [sys.executable, "ingest.py", "--help"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0
+    assert "--config" in result.stdout
+    assert "--reset" in result.stdout
