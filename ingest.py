@@ -65,6 +65,8 @@ def ingest(config: AppConfig, reset: bool = False) -> IngestReport:
         raise ValueError("No documents were loaded; check the configured source")
 
     chunks = split_documents(loaded.documents, config.chunking)
+    if not chunks:
+        raise ValueError("No text chunks were produced; the loaded documents are empty")
     ids = [chunk_id(chunk) for chunk in chunks]
     embeddings = create_embedding_model(config.models)
     store = _store(config, embeddings)

@@ -101,12 +101,15 @@ def load_config(path: str | Path) -> AppConfig:
     if not location.startswith(("http://", "https://")):
         location = str((config_path.parent / location).resolve())
     max_depth = source_data.get("max_depth", 2)
+    recursive = source_data.get("recursive", False)
     size = _required(chunk_data, "size", "chunking")
     overlap = _required(chunk_data, "overlap", "chunking")
     top_k = retrieval_data.get("top_k", 4)
 
     if not isinstance(max_depth, int) or max_depth < 0:
         raise ValueError("source.max_depth must be a non-negative integer")
+    if not isinstance(recursive, bool):
+        raise ValueError("source.recursive must be true or false")
     if not isinstance(size, int) or size <= 0:
         raise ValueError("chunking.size must be a positive integer")
     if not isinstance(overlap, int) or overlap < 0 or overlap >= size:
@@ -119,7 +122,7 @@ def load_config(path: str | Path) -> AppConfig:
         directory = (config_path.parent / directory).resolve()
 
     return AppConfig(
-        source=SourceConfig(location, bool(source_data.get("recursive", False)), max_depth),
+        source=SourceConfig(location, recursive, max_depth),
         vector_store=VectorStoreConfig(
             directory, str(_required(vector_data, "collection", "vector_store"))
         ),
@@ -199,7 +202,7 @@ def _load_web(source: SourceConfig, fetch: Callable[[str], str]) -> LoadReport:
         if not source.recursive or depth >= source.max_depth:
             continue
         for anchor in soup.find_all("a", href=True):
-            child = normalize_url(urljoin(url + "/", anchor["href"]))
+            child = normalize_url(urljoin(url, anchor["href"]))
             parsed = urlsplit(child)
             if parsed.scheme in {"http", "https"} and parsed.hostname == hostname and child not in visited:
                 queue.append((child, depth + 1))

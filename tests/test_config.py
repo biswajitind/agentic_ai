@@ -69,6 +69,13 @@ def test_load_config_rejects_negative_depth(tmp_path):
         load_config(path)
 
 
+def test_load_config_rejects_non_boolean_recursive_value(tmp_path):
+    path = write_config(tmp_path, source={"recursive": "false"})
+
+    with pytest.raises(ValueError, match="source.recursive"):
+        load_config(path)
+
+
 def test_repository_sample_config_is_valid():
     config = load_config(Path(__file__).parents[1] / "config.yaml")
 

@@ -110,6 +110,22 @@ def test_web_page_without_recursion_loads_only_start_page():
     assert report.documents[0].metadata["source"] == "https://example.com"
 
 
+def test_relative_web_link_resolves_against_page_not_as_child_directory():
+    pages = {
+        "https://example.com/docs/page": '<a href="child">Child</a>',
+        "https://example.com/docs/child": "<main>child</main>",
+    }
+
+    report = load_documents(
+        app_config("https://example.com/docs/page", True, 1), lambda url: pages[url]
+    )
+
+    assert [document.metadata["source"] for document in report.documents] == [
+        "https://example.com/docs/page",
+        "https://example.com/docs/child",
+    ]
+
+
 def test_failed_child_page_keeps_successful_pages_and_reports_failure():
     pages = {
         "https://example.com": '<main>home</main><a href="/good">Good</a><a href="/bad">Bad</a>',

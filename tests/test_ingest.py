@@ -145,6 +145,19 @@ def test_ingest_rejects_completely_empty_load(tmp_path, monkeypatch):
         ingest.ingest(app_config(tmp_path))
 
 
+def test_ingest_rejects_documents_that_split_to_no_chunks(tmp_path, monkeypatch):
+    import ingest
+
+    monkeypatch.setattr(
+        ingest,
+        "load_documents",
+        lambda _: LoadReport([Document(page_content="   ", metadata={"source": "empty.txt"})]),
+    )
+
+    with pytest.raises(ValueError, match="No text chunks"):
+        ingest.ingest(app_config(tmp_path))
+
+
 def test_main_parses_arguments_and_prints_summary(monkeypatch, capsys, tmp_path):
     import ingest
 
