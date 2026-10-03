@@ -1,0 +1,20 @@
+source:
+  location: "./documents"
+  recursive: false
+  max_depth: 2
+
+vector_store:
+  directory: "./data/chroma"
+  collection: "pasha"
+
+chunking:
+  size: 1000
+  overlap: 150
+
+retrieval:
+  top_k: 4
+
+models:
+  provider: "openai"
+  chat: "gpt-4.1-mini"
+  embedding: "text-embedding-3-small"
